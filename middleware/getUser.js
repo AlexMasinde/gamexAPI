@@ -5,7 +5,6 @@ const getUser = (req, res, next) => {
   if (!authHeader) return next();
   try {
     const token = authHeader.split("Bearer ")[1];
-    console.log(token);
     const user = jwt.verify(token, process.env.JWT_SECRET);
     req.user = user;
     return next();

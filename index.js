@@ -7,8 +7,7 @@ const router = express.Router();
 
 const postRoutes = require("./routes/posts");
 const userRoutes = require("./routes/users");
-
-const getUser = require("./middleware/getUser");
+const commentRoutes = require("./routes/comments");
 
 const PORT = 5000 || process.env.PORT;
 
@@ -18,6 +17,7 @@ app.use(express.json());
 //route middleware
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/comments", commentRoutes);
 
 //connect to database
 const mongoDB = process.env.DB_CONNECT;
