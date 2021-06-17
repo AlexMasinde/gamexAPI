@@ -1,10 +1,15 @@
-const Auth = (req, res, nex) => {
+const auth = (req, res, next) => {
   try {
     const user = req.user;
-    if (!user) throw new Error("Unauthenticated");
-    return nex();
+    if (!user)
+      return res
+        .status(401)
+        .send({ message: "Please login or register to continue" });
+    return next();
   } catch (err) {
     console.log(err);
     res.status(401).send({ error: "Not authorized" });
   }
 };
+
+module.exports = auth;

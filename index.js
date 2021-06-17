@@ -15,9 +15,6 @@ const PORT = 5000 || process.env.PORT;
 //middleware
 app.use(express.json());
 
-//global route logic
-router.all("/api/posts/*", getUser);
-
 //route middleware
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
