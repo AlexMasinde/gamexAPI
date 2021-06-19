@@ -22,10 +22,7 @@ const postSchema = new mongoose.Schema({
     required: true,
   },
   imageUrls: [{ type: String }],
-  likeCount: {
-    type: Number,
-    default: 0,
-  },
+  likes: [{ type: String }],
   commentCount: {
     type: Number,
     default: 0,

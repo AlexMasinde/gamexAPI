@@ -32,7 +32,8 @@ router.get("/:postId", getUser, async (req, res) => {
 
 //Create a new post
 router.post("/", getUser, auth, async (req, res) => {
-  const { userName, gameTitle, genre, description } = req.body;
+  const { gameTitle, genre, description } = req.body;
+  const { userName } = req.user;
   const post = new Post({
     userName,
     gameTitle,

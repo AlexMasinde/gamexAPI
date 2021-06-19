@@ -3,11 +3,11 @@ const mongoose = require("mongoose");
 require("dotenv/config");
 
 const app = express();
-const router = express.Router();
 
 const postRoutes = require("./routes/posts");
 const userRoutes = require("./routes/users");
 const commentRoutes = require("./routes/comments");
+const likeRoute = require("./routes/likes");
 
 const PORT = 5000 || process.env.PORT;
 
@@ -18,6 +18,7 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/comments", commentRoutes);
+app.use("/api/like", likeRoute);
 
 //connect to database
 const mongoDB = process.env.DB_CONNECT;
