@@ -23,7 +23,10 @@ app.use("/api/like", likeRoute);
 //connect to database
 const mongoDB = process.env.DB_CONNECT;
 
-mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(mongoDB, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 const db = mongoose.connection;
 
