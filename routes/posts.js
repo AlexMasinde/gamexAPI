@@ -1,6 +1,9 @@
 const router = require("express").Router();
+const multer = require("multer");
+const upload = multer({ desc: "uploads/" });
 
 const Post = require("../models/Post");
+
 const getUser = require("../middleware/getUser");
 const auth = require("../middleware/auth");
 
@@ -31,26 +34,32 @@ router.get("/:postId", getUser, async (req, res) => {
 });
 
 //Create a new post
-router.post("/", getUser, auth, async (req, res) => {
-  const { gameTitle, genre, description } = req.body;
-  const { userName } = req.user;
-  const post = new Post({
-    userName,
-    gameTitle,
-    genre,
-    description,
-  });
+router.post(
+  "/",
+  getUser,
+  auth,
+  upload.array("gameimages", 3),
+  async (req, res) => {
+    const { gameTitle, genre, description } = req.body;
+    const { userName } = req.user;
+    const post = new Post({
+      userName,
+      gameTitle,
+      genre,
+      description,
+    });
 
-  try {
-    const savedPost = await post.save();
-    res.status(201).send(savedPost);
-  } catch (err) {
-    console.log(err);
-    res
-      .status(500)
-      .status({ message: "Coult not create post. Please try again" });
+    try {
+      const savedPost = await post.save();
+      res.status(201).send(savedPost);
+    } catch (err) {
+      console.log(err);
+      res
+        .status(500)
+        .status({ message: "Coult not create post. Please try again" });
+    }
   }
-});
+);
 
 //Update a post
 router.patch("/:postId", getUser, auth, async (req, res) => {

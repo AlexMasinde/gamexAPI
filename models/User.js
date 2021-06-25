@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
   },
   displayPictureUrl: {
     type: String,
-    default: "No image uploaded",
+    default: process.env.DP_PLACEHOLDER,
   },
   role: {
     type: String,

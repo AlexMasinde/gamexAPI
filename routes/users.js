@@ -1,6 +1,8 @@
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const upload = multer({ desc: "uploads/" });
 
 const User = require("../models/User");
 const RefreshToken = require("../models/RefreshToken");
@@ -13,6 +15,9 @@ const {
 } = require("../utils/tokens");
 const { registerValidation, loginValidation } = require("../utils/validators");
 const saveRefreshToken = require("../utils/saveRefreshToken");
+const handleUpload = require("../utils/imageUploader");
+const auth = require("../middleware/auth");
+const getUser = require("../middleware/getUser");
 
 //create a new user
 router.post("/", async (req, res) => {
@@ -90,6 +95,41 @@ router.post("/logout", (_, res) => {
     message: "Logout succesful",
   });
 });
+
+//upload images
+router.post(
+  "/displaypicture",
+  getUser,
+  auth,
+  upload.single("displaypicture"),
+  async (req, res) => {
+    try {
+      let files = [];
+      files.push(req.file);
+      if (files.length < 1)
+        return res
+          .status(400)
+          .send({ message: "Please select an image and try again" });
+      const basekey = "userdisplaypictures";
+      const displayPictureUrl = await handleUpload(files, basekey);
+      const user = req.user;
+      await User.updateOne(
+        { _id: user.userId },
+        { displayPictureUrl: displayPictureUrl[0] }
+      );
+      res.send({
+        userName: user.userName,
+        message: "Display picture changed successfully",
+        displayPictureUrl,
+      });
+    } catch (err) {
+      console.log(err);
+      res
+        .status(500)
+        .send({ message: "Something went wrong. Please try again" });
+    }
+  }
+);
 
 //Create and save new refresh tokens
 router.post("/refresh_token", (req, res) => {
