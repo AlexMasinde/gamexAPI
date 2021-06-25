@@ -6,6 +6,7 @@ const Post = require("../models/Post");
 
 const getUser = require("../middleware/getUser");
 const auth = require("../middleware/auth");
+const handleUpload = require("../utils/imageUploader");
 
 //get all the posts
 router.get("/", getUser, async (req, res) => {
@@ -40,16 +41,22 @@ router.post(
   auth,
   upload.array("gameimages", 3),
   async (req, res) => {
+    const files = req.files;
     const { gameTitle, genre, description } = req.body;
     const { userName } = req.user;
-    const post = new Post({
-      userName,
-      gameTitle,
-      genre,
-      description,
-    });
-
     try {
+      let imageUrls = [];
+      if (files.length > 1) {
+        const basekey = "gamepostimages";
+        imageUrls = await handleUpload(files, basekey);
+      }
+      const post = new Post({
+        userName,
+        gameTitle,
+        genre,
+        imageUrls: imageUrls,
+        description,
+      });
       const savedPost = await post.save();
       res.status(201).send(savedPost);
     } catch (err) {
