@@ -54,7 +54,7 @@ router.post(
         userName,
         gameTitle,
         genre,
-        imageUrls: imageUrls,
+        imageUrls,
         description,
       });
       const savedPost = await post.save();

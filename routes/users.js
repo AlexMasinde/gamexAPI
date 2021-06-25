@@ -136,7 +136,9 @@ router.post("/refresh_token", (req, res) => {
   const token = req.cookies.refreshtoken;
   if (!token) res.send({ accessToken: "" });
   jwt.verify(token, process.env.JWT_SECRET, async function (err, decodedToken) {
-    if (err) return res.send({ accessToken: "" });
+    if (err) {
+      return res.send({ accessToken: "" });
+    }
     const { userId, refreshToken } = decodedToken;
     const token = await RefreshToken.findById(userId);
     if (!token) return res.send({ accessToken: "" });
