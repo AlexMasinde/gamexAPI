@@ -22,3 +22,5 @@ const handleUpload = async (files, basekey) => {
   const imageUrls = await Promise.all(promises);
   return imageUrls;
 };
+
+module.exports = handleUpload;

@@ -45,7 +45,7 @@ exports.loginValidation = (email, password) => {
   }
 
   if (password === "") {
-    errors.password = "Please enter your password";
+    errors.password = "Please enter your password to proceed";
   } else {
     if (password.length < 6) {
       password.errors = "Password should be at least 6 characters";

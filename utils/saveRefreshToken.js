@@ -1,5 +1,6 @@
 const RefreshToken = require("../models/RefreshToken");
 
+//save refresh token to db
 const saveRefreshToken = async (userId, refreshToken) => {
   try {
     const token = await RefreshToken.findOne({ userId });
