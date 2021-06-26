@@ -2,7 +2,7 @@ const s3 = require("../awsconfig/s3");
 const S3Uploader = require("../lib/S3Uploader");
 const resizeImage = require("./resizeImage");
 
-const imageUploader = new S3Uploader(s3);
+const imageHandler = new S3Uploader(s3);
 
 const handleUpload = async (files, basekey) => {
   const promises = files.map(async (file) => {
@@ -10,7 +10,7 @@ const handleUpload = async (files, basekey) => {
     const filename = originalname;
     const resizedBuffer = await resizeImage(buffer);
 
-    const url = await imageUploader.upload(resizedBuffer, {
+    const url = await imageHandler.upload(resizedBuffer, {
       filename,
       mimetype,
       basekey,
@@ -23,4 +23,14 @@ const handleUpload = async (files, basekey) => {
   return imageUrls;
 };
 
-module.exports = handleUpload;
+const handleDelete = async (images) => {
+  let keys = [];
+
+  images.forEach((image) => {
+    keys.push({ Key: image });
+  });
+
+  await imageHandler.delete(keys);
+};
+
+module.exports = { handleUpload, handleDelete };

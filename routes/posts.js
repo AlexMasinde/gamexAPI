@@ -3,10 +3,11 @@ const multer = require("multer");
 const upload = multer({ desc: "uploads/" });
 
 const Post = require("../models/Post");
+const Comment = require("../models/Comment");
 
 const getUser = require("../middleware/getUser");
 const auth = require("../middleware/auth");
-const handleUpload = require("../utils/imageUploader");
+const { handleUpload, handleDelete } = require("../utils/imageHandler");
 
 //get all the posts
 router.get("/", getUser, async (req, res) => {
@@ -120,16 +121,20 @@ router.patch("/exchange/:postId", getUser, auth, async (req, res) => {
 //Delete a post
 router.delete("/:postId", getUser, auth, async (req, res) => {
   const { userName } = req.user;
+  const postId = req.params.postId;
   try {
-    const post = await Post.findById(req.params.postId);
+    const post = await Post.findById(postId);
 
     if (!post) return res.status(404).send({ message: "Post not found" });
     if (userName !== post.userName)
       return res
         .status(401)
         .send({ message: "You can only delete your own posts" });
-    await Post.deleteOne({ _id: req.params.postId });
-    res.send("Your post has been succesfully deleted");
+
+    await handleDelete(post.imageUrls);
+    await Post.deleteOne({ _id: postId });
+    await Comment.deleteMany({ postId });
+    res.send({ message: "Your post has been succesfully deleted" });
   } catch (err) {
     res.send({ message: "Could not delete post" });
     console.log(err);

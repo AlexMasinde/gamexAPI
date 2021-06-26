@@ -2,6 +2,7 @@ const router = require("express").Router();
 
 const Comment = require("../models/Comment");
 const Post = require("../models/Post");
+
 const getUser = require("../middleware/getUser");
 const auth = require("../middleware/auth");
 
@@ -53,7 +54,14 @@ router.delete("/", getUser, auth, async (req, res) => {
       return res
         .status(403)
         .send({ message: "You can only delete your own comments" });
+    const postId = comment.postId;
+    const post = await Post.findById(postId);
+    const updatedCommentCount = post.commentCount - 1;
     await Comment.deleteOne({ _id: commentId });
+    await Post.updateOne(
+      { _id: postId },
+      { commentCount: updatedCommentCount }
+    );
     res.status(200).send({ message: "Comment deleted successfully" });
   } catch (err) {
     console.log(err);

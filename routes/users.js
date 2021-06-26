@@ -15,7 +15,8 @@ const {
 } = require("../utils/tokens");
 const { registerValidation, loginValidation } = require("../utils/validators");
 const saveRefreshToken = require("../utils/saveRefreshToken");
-const handleUpload = require("../utils/imageUploader");
+const { handleUpload } = require("../utils/imageHandler");
+
 const auth = require("../middleware/auth");
 const getUser = require("../middleware/getUser");
 
