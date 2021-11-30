@@ -1,0 +1,335 @@
+openapi: 3.0.0
+info:
+  description: "This is a backend API for a used PS5, PS4, and XBox games exchange platform. Click the `Authorize` button below and enter the token recived from login or signup to access protected routes"
+  version: 1.0.0
+  title: Game Exchange Platfrom API
+  contact:
+    email: alexmasinde1992@gmail.com
+  license:
+    name: Apache 2.0
+servers: 
+  - url: http://localhost:5000/api
+    description: Server for development environment
+tags:
+  - name: Users
+    description: Authentication and user routes
+  - name: Posts
+    description: Create, read, update, and delete game posts
+  - name: Comments
+    description: Create, read, update, and delete game post comments 
+  - name: Likes
+    description: Like game post 
+components: 
+  schemas:
+    Post:
+      gameTitle:
+        type: string
+      genre: 
+        type: string 
+      description: 
+        type: string
+    User:
+      properties:
+        userName:
+          type: string
+          required: true
+        email:
+          type: string
+          required: true
+        password: 
+          type: string
+          required: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: Bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+paths: 
+    /users/: 
+      post:
+        tags:
+        - Users
+        summary: Create a new user 
+        
+        requestBody:
+          required: true
+          description: Takes new user details object. For successful signup, userName, password, and email all must be provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+        responses: 
+          '201':
+            description: New user succesfully created
+          '409':
+            description: User already exists
+          '400':
+            description: Invalid user details
+          '500':
+            description: Internal server error 
+      
+
+
+    /users/login:
+      post:
+        tags:
+          - Users
+        summary: Login into user account
+
+
+        requestBody:
+          required: true
+          description: Signs user into their account. Takes a valid email and password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                    required: true
+                  password:
+                    type: string
+                    required: true
+        
+        responses: 
+          '200':
+            description: Successful user login
+          '400':
+            description: Supplied wrong or invalid credentials
+          '500':
+            description: Internal server error 
+    
+
+
+    /users/logout:
+      post:
+        tags: 
+          - Users
+        summary: Log out of account
+
+        requestBody:
+          required: false
+          description: Signout user out of their account
+
+        responses:
+          '200':
+            description: Succesful user logout 
+
+
+
+    /users/displaypicture:
+      post:
+        tags: 
+          - Users
+        summary: Upload user profile picture
+
+        requestBody:
+          required: true
+          description: Select profile picture 
+          content: 
+            multipart/form-data:
+              schema:
+                type: object
+                properties:
+                  displaypicture:
+                    type: string
+                    format: binary
+
+        responses: 
+            '200':
+              description: Display picture changed succesfully 
+            '400':
+              description: Profile image not selected
+            '401':
+              description: Could not authorize request 
+            '500':
+              description: Internal server error 
+    
+
+
+    /posts/allposts:
+      get:
+        tags:
+          - Posts
+        summary: Get all the game posts
+
+        responses: 
+            '200':
+              description: Posts fetched succesfully 
+            '500':
+              description: Internal server error 
+
+
+
+    /posts/{postId}:
+      get: 
+        tags:
+          - Posts
+        summary: Fetch a single post
+
+        parameters:
+          - in: path
+            name: postId
+            schema: 
+              type: string
+            required: true
+            description: Id of the post that needs to be fetched
+        
+        responses: 
+          '200':
+            description: Post fetched succesfully
+          '500':
+            description: Internal server error
+      
+
+      patch:
+        tags: 
+          - Posts
+        summary: Update game post details
+
+        requestBody:
+          required: true
+          description: Update post with new details. Can be all or any of the main post details (gameTitle, genre, description)
+          content:
+            application/json:
+              schema: 
+                $ref: '#components/schemas/Post'
+        
+        responses: 
+          '200':
+            description: Post succesfully updated
+          '404':
+            description: Post does not exist
+          '401':
+            description: Not allowed to delete post 
+          '400':
+            description: No new post details supplied 
+          '500':
+            description: Internal server error 
+      
+
+      delete: 
+        tags:
+          - Posts
+        summary: Delete a game post 
+
+        parameters:
+          - in: path
+            required: true
+            name: postId
+            schema: 
+              type: string
+            description: Id of game post to be deleted
+        
+        responses:
+          '200':
+            description: Post succesfully deleted
+          '401':
+            description: Operation not authorized
+          '500':
+            description: Internal server error
+
+    /posts/: 
+      post: 
+        tags: 
+          - Posts 
+        summary: Create a game post
+
+        requestBody:
+          required: true
+          description: Create a post of a game to be exchanged
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        
+        responses: 
+          '201':
+            description: New game post succesfully created
+          '401':
+            description: operation not authorized
+          '500':
+            description: Internal server error
+
+
+
+    /posts/exchange/{postId}:
+      patch:
+        tags: 
+          - Posts
+        summary: Mark a game as already exchanged
+
+        parameters:
+          - in: path
+            name: postId
+            required: true
+            description: Marks the game of the supplied ID as exchanged 
+            schema:
+              type: string 
+            
+        responses: 
+          '200':
+            description: Game succesfully marked as exchanged
+          '401':
+            description: Operation not authorized
+          '500':
+            description: Internal server error
+
+
+    /comments/:
+      get:
+        tags: 
+          - Comments
+        summary: Fetch all post comments 
+
+        requestBody:
+          required: true
+          description: Fetch all comments for the supplied post 
+          content:
+            application/json:
+              schema:
+                type: object 
+                properties:
+                  postId:
+                    type: string
+        
+        responses:
+          '200':
+            description: Succesfully fetched post comments
+          '500':
+            description: Internal server error
+      
+
+      post: 
+        tags:
+          - Comments
+        summary: Comment on a game post 
+
+        requestBody:
+          required: true
+          description: Post a comment about the selected post
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  postId: 
+                    type: string
+                  commentText:
+                    type: string
+
+        responses: 
+          '201':
+            description: Comment succesfully created
+          '401':
+            description: Operation not authorized
+          '400':
+            description: Invalid details
+          '500':
+            description: Internal server error 
+
+        

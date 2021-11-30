@@ -10,7 +10,7 @@ const auth = require("../middleware/auth");
 const { handleUpload, handleDelete } = require("../utils/imageHandler");
 
 //get all the posts
-router.get("/", getUser, async (req, res) => {
+router.get("/allposts", getUser, async (req, res) => {
   try {
     const posts = await Post.find();
     res.send(posts);
@@ -72,6 +72,16 @@ router.post(
 //Update a post
 router.patch("/:postId", getUser, auth, async (req, res) => {
   const { gameTitle, genre, description } = req.body;
+
+  const gameUpdate = {};
+
+  if (gameTitle) gameUpdate.gameTitle = gameTitle;
+  if (genre) gameUpdate.genre = genre;
+  if (description) gameUpdate.description = description;
+
+  if (object.keys(gameUpdate).length === 0)
+    return res.status(400).send({ message: "No updates were made" });
+
   const { userName } = req.user;
   const postId = req.params.postId;
   try {

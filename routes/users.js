@@ -5,16 +5,9 @@ const multer = require("multer");
 const upload = multer({ desc: "uploads/" });
 
 const User = require("../models/User");
-const RefreshToken = require("../models/RefreshToken");
 
-const {
-  createRefreshToken,
-  sendAccessToken,
-  sendRefreshToken,
-  createAccessToken,
-} = require("../utils/tokens");
+const { sendAccessToken, createAccessToken } = require("../utils/tokens");
 const { registerValidation, loginValidation } = require("../utils/validators");
-const saveRefreshToken = require("../utils/saveRefreshToken");
 const { handleUpload } = require("../utils/imageHandler");
 
 const auth = require("../middleware/auth");
@@ -33,13 +26,8 @@ router.post("/", async (req, res) => {
       $or: [{ userName: userName }, { email: email }],
     });
 
-    if (userExists.email === email) {
+    if (userExists.length > 0 && userExists[0].email === email) {
       duplicateError.emailDuplicate = `User with ${email} already exists`;
-      return res.status(409).send(duplicateError);
-    }
-
-    if (userExists.userName === userName) {
-      duplicateError.usernameDuplicate = "This username is already taken";
       return res.status(409).send(duplicateError);
     }
 
@@ -52,6 +40,9 @@ router.post("/", async (req, res) => {
     });
 
     const newUser = await user.save();
+    const userId = newUser._id;
+    const token = createAccessToken(userId, userName);
+    sendAccessToken(userId, token, res);
     res.status(201).send(newUser);
   } catch (err) {
     console.log(err);
@@ -79,9 +70,6 @@ router.post("/login", async (req, res) => {
     const userId = user._id;
     const userName = user.userName;
     const token = createAccessToken(userId, userName);
-    const refreshToken = createRefreshToken(userId, userName);
-    saveRefreshToken(userId, refreshToken);
-    sendRefreshToken(res, refreshToken);
     sendAccessToken(userId, token, res);
   } catch (err) {
     console.log(err);
@@ -91,7 +79,6 @@ router.post("/login", async (req, res) => {
 
 //Logout of account
 router.post("/logout", (_, res) => {
-  res.clearCookie("refreshtoken", { path: "/refresh_token" });
   res.send({
     message: "Logout succesful",
   });
@@ -131,25 +118,5 @@ router.post(
     }
   }
 );
-
-//Create and save new refresh tokens
-router.post("/refresh_token", (req, res) => {
-  const token = req.cookies.refreshtoken;
-  if (!token) res.send({ accessToken: "" });
-  jwt.verify(token, process.env.JWT_SECRET, async function (err, decodedToken) {
-    if (err) {
-      return res.send({ accessToken: "" });
-    }
-    const { userId, refreshToken } = decodedToken;
-    const token = await RefreshToken.findById(userId);
-    if (!token) return res.send({ accessToken: "" });
-    if (token !== refreshToken) return res.send({ accessToken: "" });
-    const newAccessToken = createAccessToken(userId);
-    const newRefreshToken = createRefreshToken(userId);
-    sendAccessToken(userId, newAccessToken, res);
-    sendRefreshToken(res, newRefreshToken);
-    saveRefreshToken(userId, newRefreshToken);
-  });
-});
 
 module.exports = router;

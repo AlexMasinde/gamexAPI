@@ -1,5 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const swaggerUi = require("swagger-ui-express");
+const YAML = require("yamljs");
+const swaggerDocument = YAML.load("./swagger.yaml");
 require("dotenv/config");
 
 const app = express();
@@ -13,6 +16,9 @@ const PORT = 5000 || process.env.PORT;
 
 //middleware
 app.use(express.json());
+
+//use Swagger-ui-express
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 //route middleware
 app.use("/api/users", userRoutes);

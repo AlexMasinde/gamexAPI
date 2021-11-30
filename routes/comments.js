@@ -23,6 +23,8 @@ router.get("/", getUser, async (req, res) => {
 //create a comment
 router.post("/", getUser, auth, async (req, res) => {
   const { postId, commentText } = req.body;
+  if (!commentText || !postId)
+    return res.status(400).send({ message: "Comment text is required" });
   const { userName } = req.user;
   try {
     let post = await Post.findById(postId);
