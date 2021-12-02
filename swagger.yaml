@@ -9,6 +9,7 @@ info:
     name: Apache 2.0
 servers: 
   - url: https://mongoexpressgameapi.herokuapp.com/api
+  - url: https://localhost:5000/api
 tags:
   - name: Users
     description: Authentication and user routes

@@ -10,8 +10,10 @@ const getUser = require("../middleware/getUser");
 const auth = require("../middleware/auth");
 const { handleUpload, handleDelete } = require("../utils/imageHandler");
 
+router.use(getUser);
+
 //get all the posts
-router.get("/allposts", getUser, async (req, res) => {
+router.get("/allposts", async (_, res) => {
   try {
     const posts = await Post.find();
     if (posts.length === 0) return res.send({ posts: "No posts found" });
@@ -25,7 +27,7 @@ router.get("/allposts", getUser, async (req, res) => {
 });
 
 //get a single post
-router.get("/:postId", getUser, async (req, res) => {
+router.get("/:postId", async (req, res) => {
   const postId = req.params.postId;
   try {
     const post = await Post.findById(postId);
@@ -40,53 +42,47 @@ router.get("/:postId", getUser, async (req, res) => {
 });
 
 //Create a new post
-router.post(
-  "/",
-  getUser,
-  auth,
-  upload.array("gameimages", 3),
-  async (req, res) => {
-    const files = req.files;
-    const { gameTitle, genre, description } = req.body;
-    const { userName } = req.user;
+router.post("/", auth, upload.array("gameimages", 3), async (req, res) => {
+  const files = req.files;
+  const { gameTitle, genre, description } = req.body;
+  const { userName } = req.user;
 
-    const gamePost = {};
+  const gamePost = {};
 
-    if (gameTitle) gameUpdate.gameTitle = gameTitle;
-    if (genre) gameUpdate.genre = genre;
-    if (description) gameUpdate.description = description;
+  if (gameTitle) gameUpdate.gameTitle = gameTitle;
+  if (genre) gameUpdate.genre = genre;
+  if (description) gameUpdate.description = description;
 
-    if (Object.keys(gamePost).length === 0)
-      return res.status(400).send({
-        message: "Please provide a game title, genre, and description",
-      });
+  if (Object.keys(gamePost).length === 0)
+    return res.status(400).send({
+      message: "Please provide a game title, genre, and description",
+    });
 
-    try {
-      let imageUrls = [];
-      if (files.length > 0) {
-        const basekey = "gamepostimages";
-        imageUrls = await handleUpload(files, basekey);
-      }
-      const post = new Post({
-        userName,
-        gameTitle,
-        genre,
-        imageUrls,
-        description,
-      });
-      const savedPost = await post.save();
-      res.status(201).send(savedPost);
-    } catch (err) {
-      Sentry.captureException(err);
-      res
-        .status(500)
-        .status({ message: "Coult not create post. Please try again" });
+  try {
+    let imageUrls = [];
+    if (files.length > 0) {
+      const basekey = "gamepostimages";
+      imageUrls = await handleUpload(files, basekey);
     }
+    const post = new Post({
+      userName,
+      gameTitle,
+      genre,
+      imageUrls,
+      description,
+    });
+    const savedPost = await post.save();
+    res.status(201).send(savedPost);
+  } catch (err) {
+    Sentry.captureException(err);
+    res
+      .status(500)
+      .status({ message: "Coult not create post. Please try again" });
   }
-);
+});
 
 //Update a post
-router.patch("/:postId", getUser, auth, async (req, res) => {
+router.patch("/:postId", auth, async (req, res) => {
   const { gameTitle, genre, description } = req.body;
 
   const gameUpdate = {};
@@ -124,7 +120,7 @@ router.patch("/:postId", getUser, auth, async (req, res) => {
 });
 
 //Mark game as exchanged
-router.patch("/exchange/:postId", getUser, auth, async (req, res) => {
+router.patch("/exchange/:postId", auth, async (req, res) => {
   const postId = req.params.postId;
   const { userName } = req.user;
   try {
@@ -144,7 +140,7 @@ router.patch("/exchange/:postId", getUser, auth, async (req, res) => {
 });
 
 //Delete a post
-router.delete("/:postId", getUser, auth, async (req, res) => {
+router.delete("/:postId", auth, async (req, res) => {
   const postId = req.params.postId;
   const { userName } = req.user;
   try {
