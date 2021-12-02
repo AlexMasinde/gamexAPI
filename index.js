@@ -47,6 +47,6 @@ db.on("error", function (err) {
 });
 
 db.once("open", function () {
-  const PORT = 5000 || process.env.PORT;
+  const PORT = process.env.PORT || 5000;
   app.listen(PORT);
 });
