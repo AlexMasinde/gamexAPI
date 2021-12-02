@@ -10,25 +10,32 @@ router.post("/", getUser, auth, async (req, res) => {
   const { modelId, modelType } = req.body;
   const { userName } = req.user;
 
-  const schemaIdentifier = modelType === "post" ? Post : Comment;
-  let payload = await schemaIdentifier.findById(modelId);
-  if (!payload) return res.status(404).send({ message: "Not found" });
-  const likes = payload.likes;
-  const liked = likes.indexOf(userName) !== -1;
-  if (!liked) {
+  if (!modelId || !modelType) return res.status(400).send("Invalid request");
+
+  try {
+    const schemaIdentifier = modelType === "post" ? Post : Comment;
+    let payload = await schemaIdentifier.findById(modelId);
+    if (!payload) return res.status(404).send({ message: "Not found" });
+    const likes = payload.likes;
+    const liked = likes.indexOf(userName) !== -1;
+    if (!liked) {
+      await schemaIdentifier.updateOne(
+        { _id: modelId },
+        { $push: { likes: userName } }
+      );
+      payload = await schemaIdentifier.findById(modelId);
+      return res.status(200).send(payload);
+    }
     await schemaIdentifier.updateOne(
       { _id: modelId },
-      { $push: { likes: userName } }
+      { $pull: { likes: userName } }
     );
     payload = await schemaIdentifier.findById(modelId);
-    return res.status(200).send(payload);
+    res.status(200).send(payload);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send("Server error");
   }
-  await schemaIdentifier.updateOne(
-    { _id: modelId },
-    { $pull: { likes: userName } }
-  );
-  payload = await schemaIdentifier.findById(modelId);
-  res.status(200).send(payload);
 });
 
 module.exports = router;

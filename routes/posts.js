@@ -24,9 +24,11 @@ router.get("/allposts", getUser, async (req, res) => {
 
 //get a single post
 router.get("/:postId", getUser, async (req, res) => {
+  const postId = req.params.postId;
   try {
-    const post = await Post.findById(req.params.postId);
-    res.status(200).send({ post });
+    const post = await Post.findById(postId);
+    const comments = await Comment.find({ postId: postId });
+    res.status(200).send({ post, comments });
   } catch (err) {
     console.log(err);
     res
@@ -115,7 +117,7 @@ router.patch("/exchange/:postId", getUser, auth, async (req, res) => {
     let post = await Post.findById(postId);
     if (!post) return res.status(404).send({ message: "Post not found" });
     if (userName !== post.userName)
-      return res.status(401).send({
+      return res.status(403).send({
         message: "You can only mark or unmark posts that you created",
       });
     const updateBoolean = post.exchanged ? false : true;
@@ -144,7 +146,7 @@ router.delete("/:postId", getUser, auth, async (req, res) => {
     await handleDelete(post.imageUrls);
     await Post.deleteOne({ _id: postId });
     await Comment.deleteMany({ postId });
-    res.send({ message: "Your post has been succesfully deleted" });
+    res.status(200).send({ message: "Your post has been succesfully deleted" });
   } catch (err) {
     res.send({ message: "Could not delete post" });
     console.log(err);

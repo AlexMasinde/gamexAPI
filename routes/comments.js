@@ -6,34 +6,26 @@ const Post = require("../models/Post");
 const getUser = require("../middleware/getUser");
 const auth = require("../middleware/auth");
 
-//Get all post comments
-router.get("/", getUser, async (req, res) => {
-  const { postId } = req.body;
-  try {
-    const post = await Post.findById(postId);
-    if (!post) return res.status(404).send({ message: "Post not found" });
-    const comments = await Comment.find({ postId: postId });
-    res.status(200).send(comments);
-  } catch (err) {
-    console.log(err);
-    res.status(500).send({ message: "Something went wrong. Please try again" });
-  }
-});
-
 //create a comment
-router.post("/", getUser, auth, async (req, res) => {
-  const { postId, commentText } = req.body;
-  if (!commentText || !postId)
+router.post("/:postId", getUser, auth, async (req, res) => {
+  const postId = req.params.postId;
+  const { userId, userName } = req.user;
+  const { commentText } = req.body;
+
+  if (!commentText)
     return res.status(400).send({ message: "Comment text is required" });
-  const { userName } = req.user;
+
   try {
     let post = await Post.findById(postId);
     if (!post) return res.status(404).send({ message: "Post not found" });
+
     const newComment = new Comment({
       postId,
       body: commentText,
       userName,
+      userId,
     });
+
     const savedComment = await newComment.save();
     const numberOfComments = post.commentCount + 1;
     await Post.updateOne({ _id: postId }, { commentCount: numberOfComments });
@@ -46,11 +38,12 @@ router.post("/", getUser, auth, async (req, res) => {
 });
 
 //delete comment
-router.delete("/", getUser, auth, async (req, res) => {
-  const { commentId } = req.body;
+router.delete("/:commentId", getUser, auth, async (req, res) => {
+  const commentId = req.params.commentId;
   const { userName } = req.user;
+
   try {
-    const comment = await Comment.findById(commentId);
+    const comment = await Comment.findOne({ _id: commentId });
     if (!comment) return res.status(404).send({ message: "Comment not found" });
     if (userName !== comment.userName)
       return res
@@ -74,12 +67,17 @@ router.delete("/", getUser, auth, async (req, res) => {
 });
 
 //edit comment
-router.patch("/", getUser, auth, async (req, res) => {
-  const { commentId, commentText } = req.body;
+router.patch("/:commentId", getUser, auth, async (req, res) => {
+  const { commentText } = req.body;
+  const commentId = req.params.commentId;
   const { userName } = req.user;
 
+  if (!commentText) {
+    return res.status(400).send({ message: "Comment text is required" });
+  }
+
   try {
-    let comment = await Comment.findById(commentId);
+    let comment = await Comment.findOne({ _id: commentId });
     if (!comment) return res.status(404).send({ message: "Comment not found" });
     if (userName !== comment.userName)
       return res

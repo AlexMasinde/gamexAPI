@@ -64,10 +64,10 @@ paths:
         responses: 
           '201':
             description: New user succesfully created
-          '409':
-            description: User already exists
           '400':
             description: Invalid user details
+          '409':
+            description: User already exists
           '500':
             description: Internal server error 
       
@@ -118,6 +118,8 @@ paths:
         responses:
           '200':
             description: Succesful user logout 
+          '500':
+            description: Internal server error
 
 
 
@@ -143,9 +145,11 @@ paths:
             '200':
               description: Display picture changed succesfully 
             '400':
-              description: Profile image not selected
+              description: Profile image not selected or wrong format
             '401':
-              description: Could not authorize request 
+              description: Authentication required 
+            '403':
+              description: Unauthorized operation 
             '500':
               description: Internal server error 
     
@@ -163,6 +167,29 @@ paths:
             '500':
               description: Internal server error 
 
+    /posts/: 
+      post: 
+        tags: 
+          - Posts 
+        summary: Create a game post
+
+        requestBody:
+          required: true
+          description: Create a post of a game to be exchanged
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        
+        responses: 
+          '201':
+            description: New game post succesfully created
+          '400':
+            description: No post details supplied or wrong format
+          '401':
+            description: Authentication required
+          '500':
+            description: Internal server error
 
 
     /posts/{postId}:
@@ -202,12 +229,14 @@ paths:
         responses: 
           '200':
             description: Post succesfully updated
+          '400':
+            description: No new post details supplied or wrong format
+          '401':
+            description: Authentication required
+          '403':
+            description: Unauthorized operation 
           '404':
             description: Post does not exist
-          '401':
-            description: Not allowed to delete post 
-          '400':
-            description: No new post details supplied 
           '500':
             description: Internal server error 
       
@@ -229,29 +258,11 @@ paths:
           '200':
             description: Post succesfully deleted
           '401':
+            description: Authentication required
+          '403':
             description: Operation not authorized
-          '500':
-            description: Internal server error
-
-    /posts/: 
-      post: 
-        tags: 
-          - Posts 
-        summary: Create a game post
-
-        requestBody:
-          required: true
-          description: Create a post of a game to be exchanged
-          content: 
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Post'
-        
-        responses: 
-          '201':
-            description: New game post succesfully created
-          '401':
-            description: operation not authorized
+          '404':
+            description: Post not found
           '500':
             description: Internal server error
 
@@ -275,61 +286,139 @@ paths:
           '200':
             description: Game succesfully marked as exchanged
           '401':
+            description: Authentication required
+          '403':
             description: Operation not authorized
+          '404':
+            description: Post not found
           '500':
             description: Internal server error
 
-
-    /comments/:
-      get:
+    /likes/:
+      post:
         tags: 
-          - Comments
-        summary: Fetch all post comments 
+          - Likes
+        summary: Like and unlike a comment or post 
 
         requestBody:
           required: true
-          description: Fetch all comments for the supplied post 
+          description: Like a comment or post based on the modelId and modelType in the request 
           content:
             application/json:
               schema:
-                type: object 
+                type: object
                 properties:
-                  postId:
+                  modelId: 
                     type: string
-        
+                  modelType:
+                    type: string 
+          
         responses:
           '200':
-            description: Succesfully fetched post comments
+            description: Comment succesfully deleted
+          '401':
+            description: Authentication required
+          '403':
+            description: Operation not authorized
+          '404':
+            description: Comment not found
           '500':
             description: Internal server error
-      
 
+    /comments/{postId}:
       post: 
         tags:
           - Comments
         summary: Comment on a game post 
 
+        parameters:
+          - in: path
+            name: postId
+            required: true
+            description: Id for post to be commented on 
+            schema:
+              type: string 
+
         requestBody:
           required: true
-          description: Post a comment about the selected post
+          description: Add a comment about to a post
           content:
             application/json:
               schema: 
                 type: object
                 properties:
-                  postId: 
-                    type: string
                   commentText:
                     type: string
 
         responses: 
           '201':
             description: Comment succesfully created
-          '401':
-            description: Operation not authorized
           '400':
-            description: Invalid details
+            description: No comment supplied or wrong format 
+          '401':
+            description: Authentication required
           '500':
-            description: Internal server error 
+            description: Internal server error
 
+    /comments/:
+      delete:
+        tags:
+          - Comments
+        summary: Delete a comment
+
+        parameters:
+          - in: path
+            name: commentId
+            required: true
+            description: Id for comment to be commented on 
+            schema:
+              type: string
         
+        responses:
+          '200':
+            description: Comment succesfully deleted
+          '401':
+            description: Authentication required
+          '403':
+            description: Operation not authorized
+          '404':
+            description: Comment not found
+          '500':
+            description: Internal server error
+      
+
+      patch:
+        tags:
+          - Comments 
+        summary: Edit a comment
+
+        parameters:
+          - in: path
+            name: commentId
+            required: true
+            description: Id for comment to be commented on 
+            schema:
+              type: string
+        
+        requestBody:
+          required: true
+          description: Edit comment
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  commentText: 
+                    type: string 
+        
+        responses:
+          '200':
+            description: Comment succesfully edited
+          '401':
+            description: Authentication required
+          '403':
+            description: Operation not authorized
+          '404':
+            description: Comment not found
+          '500':
+            description: Internal server error        
