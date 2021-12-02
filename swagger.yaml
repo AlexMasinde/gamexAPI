@@ -8,8 +8,7 @@ info:
   license:
     name: Apache 2.0
 servers: 
-  - url: http://localhost:5000/api
-    description: Server for development environment
+  - url: https://mongoexpressgameapi.herokuapp.com/api
 tags:
   - name: Users
     description: Authentication and user routes
