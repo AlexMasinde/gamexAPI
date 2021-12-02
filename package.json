@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "@sentry/node": "^6.15.0",
     "aws-sdk": "^2.934.0",
     "bcrypt": "^5.0.1",
     "dotenv": "^10.0.0",

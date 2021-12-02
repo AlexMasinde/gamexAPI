@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const router = require("express").Router();
 const multer = require("multer");
 const upload = multer({ desc: "uploads/" });
@@ -16,7 +17,7 @@ router.get("/allposts", getUser, async (req, res) => {
     if (posts.length === 0) return res.send({ posts: "No posts found" });
     res.status(200).send(posts);
   } catch (err) {
-    console.log(error);
+    Sentry.captureException(err);
     res
       .status(500)
       .status({ message: "Something went wrong. Please try again" });
@@ -31,7 +32,7 @@ router.get("/:postId", getUser, async (req, res) => {
     const comments = await Comment.find({ postId: postId });
     res.status(200).send({ post, comments });
   } catch (err) {
-    console.log(err);
+    Sentry.captureException(err);
     res
       .status(500)
       .status({ message: "Something went wrong. Please try again" });
@@ -48,6 +49,18 @@ router.post(
     const files = req.files;
     const { gameTitle, genre, description } = req.body;
     const { userName } = req.user;
+
+    const gamePost = {};
+
+    if (gameTitle) gameUpdate.gameTitle = gameTitle;
+    if (genre) gameUpdate.genre = genre;
+    if (description) gameUpdate.description = description;
+
+    if (Object.keys(gamePost).length === 0)
+      return res.status(400).send({
+        message: "Please provide a game title, genre, and description",
+      });
+
     try {
       let imageUrls = [];
       if (files.length > 0) {
@@ -64,7 +77,7 @@ router.post(
       const savedPost = await post.save();
       res.status(201).send(savedPost);
     } catch (err) {
-      console.log(err);
+      Sentry.captureException(err);
       res
         .status(500)
         .status({ message: "Coult not create post. Please try again" });
@@ -105,8 +118,8 @@ router.patch("/:postId", getUser, auth, async (req, res) => {
     const updatedPost = await Post.findById(postId);
     res.status(200).send(updatedPost);
   } catch (err) {
+    Sentry.captureException(err);
     res.send({ message: "Could not edit post" });
-    console.log(err);
   }
 });
 
@@ -125,7 +138,7 @@ router.patch("/exchange/:postId", getUser, auth, async (req, res) => {
     await Post.updateOne({ _id: postId }, { exchanged: updateBoolean });
     res.status(200).send({ message: "Game post status updated succesfully" });
   } catch (err) {
-    console.log(err);
+    Sentry.captureException(err);
     res.status(500).send({ error: "Could not update post. Please try again" });
   }
 });
@@ -151,8 +164,8 @@ router.delete("/:postId", getUser, auth, async (req, res) => {
     await Comment.deleteMany({ postId });
     res.status(200).send({ message: "Post succesfully deleted" });
   } catch (err) {
+    Sentry.captureException(err);
     res.send({ message: "Could not delete post" });
-    console.log(err);
   }
 });
 

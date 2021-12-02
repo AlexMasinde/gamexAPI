@@ -1,3 +1,5 @@
+const Sentry = require("@sentry/node");
+
 const router = require("express").Router();
 
 const Comment = require("../models/Comment");
@@ -32,7 +34,7 @@ router.post("/", getUser, auth, async (req, res) => {
     );
     res.status(200).send({ message: `Unliked ${modelType}` });
   } catch (err) {
-    console.log(err);
+    Sentry.captureException(err);
     return res.status(500).send("Server error");
   }
 });

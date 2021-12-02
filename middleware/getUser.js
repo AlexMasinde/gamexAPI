@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const Sentry = require("@sentry/node");
 
 const getUser = (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -9,7 +10,7 @@ const getUser = (req, res, next) => {
     req.user = user;
     return next();
   } catch (err) {
-    console.log(err);
+    Sentry.captureException(err);
     res
       .status(500)
       .send({ error: "Something went wrong! Please login and try again" });

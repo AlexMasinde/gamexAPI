@@ -1,3 +1,5 @@
+const Sentry = require("@sentry/node");
+
 const router = require("express").Router();
 
 const Comment = require("../models/Comment");
@@ -31,7 +33,7 @@ router.post("/:postId", getUser, auth, async (req, res) => {
     await Post.updateOne({ _id: postId }, { commentCount: numberOfComments });
     res.status(201).send({ message: "Comment posted" });
   } catch (err) {
-    console.log(err);
+    Sentry.captureException(err);
     res.status(500).send("Could not create comment. Please try again");
   }
 });
@@ -58,7 +60,7 @@ router.delete("/:commentId", getUser, auth, async (req, res) => {
     );
     res.status(200).send({ message: "Comment deleted successfully" });
   } catch (err) {
-    console.log(err);
+    Sentry.captureException(err);
     res
       .status(500)
       .send({ message: "Could not delete post! Please try again" });
@@ -85,7 +87,7 @@ router.patch("/:commentId", getUser, auth, async (req, res) => {
     await Comment.updateOne({ _id: commentId }, { body: commentText });
     res.status(200).send({ message: "Comment updated successfully" });
   } catch (err) {
-    console.log(err);
+    Sentry.captureException(err);
     res
       .status(500)
       .send({ message: "Could not update comment. Please try again" });

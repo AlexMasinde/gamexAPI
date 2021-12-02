@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
 const multer = require("multer");
@@ -15,6 +16,18 @@ const getUser = require("../middleware/getUser");
 //create a new user
 router.post("/", async (req, res) => {
   const { userName, email, password } = req.body;
+
+  const userPost = {};
+
+  if (userName) userPost.userName = userName;
+  if (email) userPost.email = email;
+  if (password) userPost.password = password;
+
+  if (Object.keys(userPost).length < 3)
+    return res.status(400).send({
+      message: "Please provide a user name, email, and password",
+    });
+
   const { valid, errors } = registerValidation(userName, email, password);
 
   if (!valid) return res.status(400).send(errors);
@@ -43,7 +56,7 @@ router.post("/", async (req, res) => {
     const token = createAccessToken(userId, userName);
     res.status(201).send({ ...newUser._doc, token: token, userId: userId });
   } catch (err) {
-    console.log(err);
+    Sentry.captureException(err);
     res.send({ error: "Could not create user" });
   }
 });
@@ -51,6 +64,17 @@ router.post("/", async (req, res) => {
 //log into account
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
+
+  const userPost = {};
+
+  if (email) userPost.email = email;
+  if (password) userPost.password = password;
+
+  if (Object.keys(userPost).length < 2)
+    return res.status(400).send({
+      message: "Please provide an email and password",
+    });
+
   const { errors, valid } = loginValidation(email, password);
   if (!valid) return res.status(400).send(errors);
   try {
@@ -70,7 +94,7 @@ router.post("/login", async (req, res) => {
     const token = createAccessToken(userId, userName);
     res.status(201).send({ ...user._doc, token: token });
   } catch (err) {
-    console.log(err);
+    Sentry.captureException(err);
     res.send(err);
   }
 });
@@ -102,7 +126,7 @@ router.post(
         displayPictureUrl,
       });
     } catch (err) {
-      console.log(err);
+      Sentry.captureException(err);
       res
         .status(500)
         .send({ message: "Something went wrong. Please try again" });
