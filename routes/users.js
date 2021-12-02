@@ -1,12 +1,11 @@
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const upload = multer({ desc: "uploads/" });
 
 const User = require("../models/User");
 
-const { sendAccessToken, createAccessToken } = require("../utils/tokens");
+const { createAccessToken } = require("../utils/tokens");
 const { registerValidation, loginValidation } = require("../utils/validators");
 const { handleUpload } = require("../utils/imageHandler");
 
@@ -42,8 +41,7 @@ router.post("/", async (req, res) => {
     const newUser = await user.save();
     const userId = newUser._id;
     const token = createAccessToken(userId, userName);
-    sendAccessToken(userId, token, res);
-    res.status(201).send(newUser);
+    res.status(201).send({ ...newUser._doc, token: token, userId: userId });
   } catch (err) {
     console.log(err);
     res.send({ error: "Could not create user" });
@@ -70,18 +68,11 @@ router.post("/login", async (req, res) => {
     const userId = user._id;
     const userName = user.userName;
     const token = createAccessToken(userId, userName);
-    sendAccessToken(userId, token, res);
+    res.status(201).send({ ...user._doc, token: token });
   } catch (err) {
     console.log(err);
     res.send(err);
   }
-});
-
-//Logout of account
-router.post("/logout", (_, res) => {
-  res.send({
-    message: "Logout succesful",
-  });
 });
 
 //upload images
@@ -105,7 +96,7 @@ router.post(
         { _id: user.userId },
         { displayPictureUrl: displayPictureUrl[0] }
       );
-      res.send({
+      res.status(200).send({
         userName: user.userName,
         message: "Display picture changed successfully",
         displayPictureUrl,

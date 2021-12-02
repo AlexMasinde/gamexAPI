@@ -6,14 +6,6 @@ const createAccessToken = (userId, userName) => {
   });
 };
 
-const sendAccessToken = (userId, token, res) => {
-  res.status(200).send({
-    userId,
-    token,
-  });
-};
-
 module.exports = {
   createAccessToken,
-  sendAccessToken,
 };

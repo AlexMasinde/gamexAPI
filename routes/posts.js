@@ -13,7 +13,8 @@ const { handleUpload, handleDelete } = require("../utils/imageHandler");
 router.get("/allposts", getUser, async (req, res) => {
   try {
     const posts = await Post.find();
-    res.send(posts);
+    if (posts.length === 0) return res.send({ posts: "No posts found" });
+    res.status(200).send(posts);
   } catch (err) {
     console.log(error);
     res
@@ -49,7 +50,7 @@ router.post(
     const { userName } = req.user;
     try {
       let imageUrls = [];
-      if (files.length > 1) {
+      if (files.length > 0) {
         const basekey = "gamepostimages";
         imageUrls = await handleUpload(files, basekey);
       }
@@ -81,7 +82,7 @@ router.patch("/:postId", getUser, auth, async (req, res) => {
   if (genre) gameUpdate.genre = genre;
   if (description) gameUpdate.description = description;
 
-  if (object.keys(gameUpdate).length === 0)
+  if (Object.keys(gameUpdate).length === 0)
     return res.status(400).send({ message: "No updates were made" });
 
   const { userName } = req.user;
@@ -122,8 +123,7 @@ router.patch("/exchange/:postId", getUser, auth, async (req, res) => {
       });
     const updateBoolean = post.exchanged ? false : true;
     await Post.updateOne({ _id: postId }, { exchanged: updateBoolean });
-    post = await Post.findById(postId);
-    res.status(200).send(post);
+    res.status(200).send({ message: "Game post status updated succesfully" });
   } catch (err) {
     console.log(err);
     res.status(500).send({ error: "Could not update post. Please try again" });
@@ -132,8 +132,8 @@ router.patch("/exchange/:postId", getUser, auth, async (req, res) => {
 
 //Delete a post
 router.delete("/:postId", getUser, auth, async (req, res) => {
-  const { userName } = req.user;
   const postId = req.params.postId;
+  const { userName } = req.user;
   try {
     const post = await Post.findById(postId);
 
@@ -141,12 +141,15 @@ router.delete("/:postId", getUser, auth, async (req, res) => {
     if (userName !== post.userName)
       return res
         .status(401)
-        .send({ message: "You can only delete your own posts" });
+        .send({ message: "You can only delete posts that you created" });
 
-    await handleDelete(post.imageUrls);
+    if (post.imageUrls.length > 0) {
+      await handleDelete(post.imageUrls);
+    }
+
     await Post.deleteOne({ _id: postId });
     await Comment.deleteMany({ postId });
-    res.status(200).send({ message: "Your post has been succesfully deleted" });
+    res.status(200).send({ message: "Post succesfully deleted" });
   } catch (err) {
     res.send({ message: "Could not delete post" });
     console.log(err);

@@ -4,7 +4,7 @@ exports.registerValidation = (userName, email, password) => {
   if (userName.trim() === "") {
     errors.userName = "Username cannot be empty";
   } else {
-    const userNameRegex = /^[a-zA-Z0-9]{4,10}$/;
+    const userNameRegex = /[a-zA-Z0-9]/;
     if (!userNameRegex.test(userName)) {
       errors.userName = "User name should contain letters and numbers ony";
     }

@@ -23,15 +23,14 @@ router.post("/", getUser, auth, async (req, res) => {
         { _id: modelId },
         { $push: { likes: userName } }
       );
-      payload = await schemaIdentifier.findById(modelId);
-      return res.status(200).send(payload);
+
+      return res.status(200).send({ message: `Liked ${modelType}` });
     }
     await schemaIdentifier.updateOne(
       { _id: modelId },
       { $pull: { likes: userName } }
     );
-    payload = await schemaIdentifier.findById(modelId);
-    res.status(200).send(payload);
+    res.status(200).send({ message: `Unliked ${modelType}` });
   } catch (err) {
     console.log(err);
     return res.status(500).send("Server error");

@@ -22,12 +22,16 @@ tags:
 components: 
   schemas:
     Post:
-      gameTitle:
-        type: string
-      genre: 
-        type: string 
-      description: 
-        type: string
+      properties:
+        gameTitle:
+          type: string
+          required: true
+        genre: 
+          type: string 
+          required: true
+        description: 
+          type: string
+          required: true
     User:
       properties:
         userName:
@@ -102,24 +106,6 @@ paths:
             description: Supplied wrong or invalid credentials
           '500':
             description: Internal server error 
-    
-
-
-    /users/logout:
-      post:
-        tags: 
-          - Users
-        summary: Log out of account
-
-        requestBody:
-          required: false
-          description: Signout user out of their account
-
-        responses:
-          '200':
-            description: Succesful user logout 
-          '500':
-            description: Internal server error
 
 
 
@@ -177,9 +163,21 @@ paths:
           required: true
           description: Create a post of a game to be exchanged
           content: 
-            application/json:
+            multipart/form-data:
               schema:
-                $ref: '#/components/schemas/Post'
+                type: object
+                properties:
+                  gameTitle:
+                    type: string
+                  genre:
+                    type: string
+                  description:
+                    type: string
+                  gameimages:
+                    type: array
+                    items:
+                      type: string
+                      format: binary
         
         responses: 
           '201':
@@ -218,13 +216,28 @@ paths:
           - Posts
         summary: Update game post details
 
+        parameters:
+          - in: path
+            name: postId
+            schema: 
+              type: string
+            required: true
+            description: Id of the post that needs to be updated
+
         requestBody:
           required: true
           description: Update post with new details. Can be all or any of the main post details (gameTitle, genre, description)
           content:
             application/json:
               schema: 
-                $ref: '#components/schemas/Post'
+                type: object 
+                properties:
+                  gameTitle: 
+                    type: string 
+                  genre: 
+                    type: string
+                  description:
+                    type: string 
         
         responses: 
           '200':
@@ -240,7 +253,7 @@ paths:
           '500':
             description: Internal server error 
       
-
+    
       delete: 
         tags:
           - Posts
@@ -294,7 +307,7 @@ paths:
           '500':
             description: Internal server error
 
-    /likes/:
+    /like/:
       post:
         tags: 
           - Likes
@@ -360,7 +373,7 @@ paths:
           '500':
             description: Internal server error
 
-    /comments/:
+    /comments/{commentId}:
       delete:
         tags:
           - Comments

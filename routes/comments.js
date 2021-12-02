@@ -26,11 +26,10 @@ router.post("/:postId", getUser, auth, async (req, res) => {
       userId,
     });
 
-    const savedComment = await newComment.save();
+    await newComment.save();
     const numberOfComments = post.commentCount + 1;
     await Post.updateOne({ _id: postId }, { commentCount: numberOfComments });
-    post = await Post.findById(postId);
-    res.status(201).send({ post: { post }, comment: { savedComment } });
+    res.status(201).send({ message: "Comment posted" });
   } catch (err) {
     console.log(err);
     res.status(500).send("Could not create comment. Please try again");
@@ -84,8 +83,7 @@ router.patch("/:commentId", getUser, auth, async (req, res) => {
         .status(403)
         .send({ message: "Not allowed to edit other users' comments" });
     await Comment.updateOne({ _id: commentId }, { body: commentText });
-    comment = await Comment.findById(commentId);
-    res.status(200).send(comment);
+    res.status(200).send({ message: "Comment updated successfully" });
   } catch (err) {
     console.log(err);
     res
