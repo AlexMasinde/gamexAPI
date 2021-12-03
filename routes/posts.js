@@ -70,6 +70,7 @@ router.get("/allposts", async (_, res) => {
 //get a single post
 router.get("/:postId", async (req, res) => {
   const postId = req.params.postId;
+  console.log(postId);
   try {
     const post = await Post.findById(postId);
     const comments = await Comment.find({ postId: postId });

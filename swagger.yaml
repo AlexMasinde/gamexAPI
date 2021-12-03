@@ -25,13 +25,35 @@ components:
       properties:
         gameTitle:
           type: string
-          required: true
         genre: 
           type: string 
-          required: true
         description: 
           type: string
-          required: true
+        likes: 
+          type: array
+        commentCount:
+          type: number
+        dateCreated:
+          type: date
+        exchanged:
+          type: boolean
+        imageUrls:
+          type: array
+        postId: 
+          type: string
+    Comment:
+      properties:
+        postId:
+          type: string
+        userName:
+          type: string
+        body:
+          type: string
+        likes:
+          type: array
+        dateCreated:
+          type: date
+
     User:
       properties:
         userName:
@@ -139,6 +161,33 @@ paths:
             '500':
               description: Internal server error 
     
+    /users/phone:
+      patch:
+        tags:
+          - Users
+        summary: Update user phone number 
+
+        requestBody:
+          required: true
+          description: Phone number 
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  phone: 
+                    type: string
+
+
+        responses: 
+          '200':
+            description: Phone number updated succesfully
+          '400':
+            description: Phone number not provider 
+          '401':
+            description: Authentication required  
+          '500':
+            description: Internal server error
 
 
     /posts/allposts:
@@ -306,7 +355,7 @@ paths:
           '500':
             description: Internal server error
 
-    /posts/search/:searchterm:
+    /posts/search/{searchterm}:
       get:
         tags:
           - Posts

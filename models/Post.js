@@ -37,5 +37,4 @@ const postSchema = new mongoose.Schema({
   },
 });
 
-postSchema.index({ gameTitle: "text" });
 module.exports = mongoose.model("Post", postSchema);

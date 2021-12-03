@@ -134,4 +134,24 @@ router.post(
   }
 );
 
+//update phone number
+router.patch("/phone", getUser, auth, async (req, res) => {
+  const { phone } = req.body;
+  const user = req.user;
+  if (!phone)
+    return res.status(400).send({ message: "Please provide a phone number" });
+  try {
+    await User.updateOne(
+      { _id: user.userId },
+      { $set: { phoneNumber: phone } }
+    );
+    res.status(200).send({
+      message: "Phone number changed successfully",
+    });
+  } catch (err) {
+    Sentry.captureException(err);
+    res.status(500).send({ message: "Something went wrong. Please try again" });
+  }
+});
+
 module.exports = router;
