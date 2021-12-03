@@ -8,38 +8,10 @@ const Comment = require("../models/Comment");
 
 const getUser = require("../middleware/getUser");
 const auth = require("../middleware/auth");
+
 const { handleUpload, handleDelete } = require("../utils/imageHandler");
 
 router.use(getUser);
-
-//get all the posts
-router.get("/allposts", async (_, res) => {
-  try {
-    const posts = await Post.find();
-    if (posts.length === 0) return res.send({ posts: "No posts found" });
-    res.status(200).send(posts);
-  } catch (err) {
-    Sentry.captureException(err);
-    res
-      .status(500)
-      .status({ message: "Something went wrong. Please try again" });
-  }
-});
-
-//get a single post
-router.get("/:postId", async (req, res) => {
-  const postId = req.params.postId;
-  try {
-    const post = await Post.findById(postId);
-    const comments = await Comment.find({ postId: postId });
-    res.status(200).send({ post, comments });
-  } catch (err) {
-    Sentry.captureException(err);
-    res
-      .status(500)
-      .status({ message: "Something went wrong. Please try again" });
-  }
-});
 
 //Create a new post
 router.post("/", auth, upload.array("gameimages", 3), async (req, res) => {
@@ -78,6 +50,52 @@ router.post("/", auth, upload.array("gameimages", 3), async (req, res) => {
     res
       .status(500)
       .status({ message: "Coult not create post. Please try again" });
+  }
+});
+
+//get all the posts
+router.get("/allposts", async (_, res) => {
+  try {
+    const posts = await Post.find();
+    if (posts.length === 0) return res.send({ posts: "No posts found" });
+    res.status(200).send(posts);
+  } catch (err) {
+    Sentry.captureException(err);
+    res
+      .status(500)
+      .status({ message: "Something went wrong. Please try again" });
+  }
+});
+
+//get a single post
+router.get("/:postId", async (req, res) => {
+  const postId = req.params.postId;
+  try {
+    const post = await Post.findById(postId);
+    const comments = await Comment.find({ postId: postId });
+    res.status(200).send({ post, comments });
+  } catch (err) {
+    Sentry.captureException(err);
+    res
+      .status(500)
+      .status({ message: "Something went wrong. Please try again" });
+  }
+});
+
+//get posts from one user
+router.get("/user/:username", async (req, res) => {
+  const username = req.params.username;
+  if (!username)
+    return res.status(400).send({ message: "Please provide a username" });
+  try {
+    const posts = await Post.find({ userName: username });
+    if (posts.length === 0) return res.send({ posts: "No posts found" });
+    res.status(200).send(posts);
+  } catch (err) {
+    Sentry.captureException(err);
+    res
+      .status(500)
+      .status({ message: "Something went wrong. Please try again" });
   }
 });
 
@@ -162,6 +180,23 @@ router.delete("/:postId", auth, async (req, res) => {
   } catch (err) {
     Sentry.captureException(err);
     res.send({ message: "Could not delete post" });
+  }
+});
+
+//search posts by game title
+router.get("/search/:searchterm", async (req, res) => {
+  const searchterm = req.params.searchterm;
+  if (!searchterm)
+    return res.status(400).send({ message: "Please provide a search term" });
+  try {
+    const posts = await Post.find({ $text: { $search: searchterm } });
+    if (posts.length === 0)
+      return res.status(404).send({ message: "No posts found" });
+    res.status(200).send(posts);
+  } catch (err) {
+    console.log(err);
+    Sentry.captureException(err);
+    res.status(500).send({ message: "Could not search posts" });
   }
 });
 

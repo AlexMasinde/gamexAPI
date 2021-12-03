@@ -9,7 +9,7 @@ info:
     name: Apache 2.0
 servers: 
   - url: https://mongoexpressgameapi.herokuapp.com/api
-  - url: https://localhost:5000/api
+  - url: http://localhost:5000/api
 tags:
   - name: Users
     description: Authentication and user routes
@@ -209,8 +209,7 @@ paths:
             description: Post fetched succesfully
           '500':
             description: Internal server error
-      
-
+  
       patch:
         tags: 
           - Posts
@@ -306,6 +305,55 @@ paths:
             description: Post not found
           '500':
             description: Internal server error
+
+    /posts/search/:searchterm:
+      get:
+        tags:
+          - Posts
+        summary: Search posts by game title
+
+        parameters:
+          - in: path
+            name: searchterm
+            required: true
+            description: Search term 
+            schema:
+              type: string 
+        
+        responses: 
+          '200':
+            description: Posts fetched succesfully
+          '400':
+            description: Search term not supplied
+          '404':
+            description: No posts found
+          '500':
+            description: Internal server error
+
+    /posts/user/{username}: 
+      get:
+        tags: 
+          - Posts
+        summary: Fetch posts by a single user
+
+        parameters:
+          - in: path
+            name: username
+            schema: 
+              type: string
+            required: true
+            description: Name of posts owner
+
+        responses: 
+          '200':
+            description: Posts fetched succesfully
+          '400':
+            description: User name not supplied
+          '404':
+            description: No posts by user
+          '500':
+            description: Internal server error
+
 
     /like/:
       post:
