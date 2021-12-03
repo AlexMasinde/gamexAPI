@@ -195,7 +195,6 @@ router.get("/search/:searchterm", async (req, res) => {
       return res.status(404).send({ message: "No posts found" });
     res.status(200).send(posts);
   } catch (err) {
-    console.log(err);
     Sentry.captureException(err);
     res.status(500).send({ message: "Could not search posts" });
   }
