@@ -3,8 +3,14 @@ const Sentry = require("@sentry/node");
 const mongoose = require("mongoose");
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
-const swaggerDocument = YAML.load("./swagger.yaml");
+const mongoSanitize = require("express-mongo-sanitize");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const hpp = require("hpp");
+const xss = require("xss-clean");
 require("dotenv/config");
+
+const swaggerDocument = YAML.load("./swagger.yaml");
 
 const postRoutes = require("./routes/posts");
 const userRoutes = require("./routes/users");
@@ -19,6 +25,17 @@ Sentry.init({
 
 app.use(Sentry.Handlers.requestHandler());
 app.use(express.json());
+app.use(mongoSanitize());
+app.use(helmet());
+app.use(xss());
+
+const limiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 100,
+});
+
+app.use(limiter);
+app.use(hpp());
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 

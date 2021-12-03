@@ -8,7 +8,10 @@ const Post = require("../models/Post");
 const getUser = require("../middleware/getUser");
 const auth = require("../middleware/auth");
 
-router.post("/", getUser, auth, async (req, res) => {
+router.use(getUser);
+router.use(auth);
+
+router.post("/", async (req, res) => {
   const { modelId, modelType } = req.body;
   const { userName } = req.user;
 

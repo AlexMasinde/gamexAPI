@@ -8,8 +8,11 @@ const Post = require("../models/Post");
 const getUser = require("../middleware/getUser");
 const auth = require("../middleware/auth");
 
+router.use(getUser);
+router.use(auth);
+
 //create a comment
-router.post("/:postId", getUser, auth, async (req, res) => {
+router.post("/:postId", async (req, res) => {
   const postId = req.params.postId;
   const { userId, userName } = req.user;
   const { commentText } = req.body;
@@ -39,7 +42,7 @@ router.post("/:postId", getUser, auth, async (req, res) => {
 });
 
 //delete comment
-router.delete("/:commentId", getUser, auth, async (req, res) => {
+router.delete("/:commentId", async (req, res) => {
   const commentId = req.params.commentId;
   const { userName } = req.user;
 
@@ -68,7 +71,7 @@ router.delete("/:commentId", getUser, auth, async (req, res) => {
 });
 
 //edit comment
-router.patch("/:commentId", getUser, auth, async (req, res) => {
+router.patch("/:commentId", async (req, res) => {
   const { commentText } = req.body;
   const commentId = req.params.commentId;
   const { userName } = req.user;
