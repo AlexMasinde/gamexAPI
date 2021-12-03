@@ -43,8 +43,13 @@ app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/like", likeRoute);
+
 app.get("/", (_, res) => {
   res.redirect("/api-docs");
+});
+
+app.get("*", function (_, res) {
+  res.status(404).send("404 Not Found");
 });
 
 app.use(Sentry.Handlers.errorHandler());
